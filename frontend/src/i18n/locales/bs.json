@@ -1,0 +1,115 @@
+{
+  "common": {
+    "signOut": "Odjava",
+    "close": "Zatvori",
+    "cancel": "Otkaži",
+    "loading": "Učitavanje…",
+    "saving": "Čuvanje…",
+    "view": "Prikaži"
+  },
+  "login": {
+    "title": "Praćenje narudžbi",
+    "email": "E-pošta",
+    "password": "Lozinka",
+    "signIn": "Prijava",
+    "signingIn": "Prijavljivanje…",
+    "error": "Pogrešna e-pošta ili lozinka"
+  },
+  "orders": {
+    "title": "Narudžbe",
+    "loggedInAs": "Prijavljeni kao",
+    "loading": "Učitavanje narudžbi…",
+    "error": "Greška pri učitavanju narudžbi.",
+    "empty": "Nema pronađenih narudžbi.",
+    "columns": {
+      "id": "ID",
+      "customer": "Kupac",
+      "description": "Opis",
+      "status": "Status",
+      "updated": "Ažurirano"
+    }
+  },
+  "status": {
+    "all": "Sve",
+    "pending": "Na čekanju",
+    "packaging": "Pakovanje",
+    "packaged": "Zapakovano",
+    "shipped": "Poslano",
+    "delivered": "Dostavljeno",
+    "cancelled": "Otkazano"
+  },
+  "search": {
+    "placeholder": "Pretraži po ID-u, kupcu ili opisu…",
+    "noResults": "Nema narudžbi koje odgovaraju pretrazi."
+  },
+  "export": {
+    "button": "Izvezi Excel"
+  },
+  "createOrder": {
+    "button": "Nova narudžba",
+    "title": "Kreiraj novu narudžbu",
+    "orderId": "ID narudžbe",
+    "orderIdPlaceholder": "npr. ORD-2026-004",
+    "customerName": "Ime kupca",
+    "customerEmail": "E-pošta kupca",
+    "phone": "Telefon (opcionalno)",
+    "description": "Opis (opcionalno)",
+    "create": "Kreiraj narudžbu",
+    "creating": "Kreiranje…"
+  },
+  "orderDetail": {
+    "loading": "Učitavanje…",
+    "changeStatus": "Promijeni status",
+    "setTo": "Postavi na \"{{status}}\"",
+    "auditLog": "Historija promjena",
+    "noChanges": "Još nema promjena.",
+    "initial": "Početni",
+    "locked": "Ova narudžba je zaključana i ne može se mijenjati.",
+    "statusError": "Greška pri ažuriranju statusa",
+    "alreadyThatStatus": "Narudžba već ima taj status"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "tabs": {
+      "users": "Korisnici",
+      "permissions": "Dozvole"
+    },
+    "users": {
+      "title": "Upravljanje korisnicima",
+      "createUser": "Kreiraj korisnika",
+      "email": "E-pošta",
+      "password": "Lozinka",
+      "role": "Uloga",
+      "roleUser": "Korisnik",
+      "roleAdmin": "Admin",
+      "creating": "Kreiranje…",
+      "you": "vi",
+      "deleteConfirm": "Obrisati ovog korisnika?",
+      "delete": "Obriši",
+      "cannotDeleteSelf": "Ne možete obrisati vlastiti nalog",
+      "columns": {
+        "email": "E-pošta",
+        "role": "Uloga",
+        "created": "Kreirano",
+        "actions": "Akcije"
+      }
+    },
+    "permissions": {
+      "title": "Dozvole za promjenu statusa",
+      "subtitle": "Konfigurirajte koje statuse svaka uloga može postaviti.",
+      "saving": "Čuvanje…",
+      "save": "Sačuvaj dozvole",
+      "saved": "Sačuvano!"
+    }
+  },
+  "pagination": {
+    "showing": "Prikazano {{from}}–{{to}} od {{total}}",
+    "perPage": "{{n}} / stranica",
+    "pageOf": "Stranica {{page}} od {{total}}"
+  },
+  "language": {
+    "en": "English",
+    "tr": "Türkçe",
+    "bs": "Bosanski"
+  }
+}

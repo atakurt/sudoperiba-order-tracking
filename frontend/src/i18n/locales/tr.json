@@ -1,0 +1,115 @@
+{
+  "common": {
+    "signOut": "Çıkış yap",
+    "close": "Kapat",
+    "cancel": "İptal",
+    "loading": "Yükleniyor…",
+    "saving": "Kaydediliyor…",
+    "view": "Görüntüle"
+  },
+  "login": {
+    "title": "Sipariş Takip",
+    "email": "E-posta",
+    "password": "Şifre",
+    "signIn": "Giriş yap",
+    "signingIn": "Giriş yapılıyor…",
+    "error": "Geçersiz e-posta veya şifre"
+  },
+  "orders": {
+    "title": "Siparişler",
+    "loggedInAs": "Giriş yapan",
+    "loading": "Siparişler yükleniyor…",
+    "error": "Siparişler yüklenemedi.",
+    "empty": "Sipariş bulunamadı.",
+    "columns": {
+      "id": "ID",
+      "customer": "Müşteri",
+      "description": "Açıklama",
+      "status": "Durum",
+      "updated": "Güncellendi"
+    }
+  },
+  "status": {
+    "all": "Tümü",
+    "pending": "Beklemede",
+    "packaging": "Paketleniyor",
+    "packaged": "Paketlendi",
+    "shipped": "Kargoya Verildi",
+    "delivered": "Teslim Edildi",
+    "cancelled": "İptal Edildi"
+  },
+  "search": {
+    "placeholder": "ID, müşteri veya açıklamaya göre ara…",
+    "noResults": "Aramanızla eşleşen sipariş bulunamadı."
+  },
+  "export": {
+    "button": "Excel'e Aktar"
+  },
+  "createOrder": {
+    "button": "Yeni Sipariş",
+    "title": "Yeni Sipariş Oluştur",
+    "orderId": "Sipariş ID",
+    "orderIdPlaceholder": "örn. ORD-2026-004",
+    "customerName": "Müşteri Adı",
+    "customerEmail": "Müşteri E-postası",
+    "phone": "Telefon (isteğe bağlı)",
+    "description": "Açıklama (isteğe bağlı)",
+    "create": "Sipariş Oluştur",
+    "creating": "Oluşturuluyor…"
+  },
+  "orderDetail": {
+    "loading": "Yükleniyor…",
+    "changeStatus": "Durum Değiştir",
+    "setTo": "\"{{status}}\" olarak ayarla",
+    "auditLog": "Değişiklik Geçmişi",
+    "noChanges": "Henüz değişiklik yok.",
+    "initial": "Başlangıç",
+    "locked": "Bu sipariş kilitli ve değiştirilemez.",
+    "statusError": "Durum güncellenemedi",
+    "alreadyThatStatus": "Sipariş zaten bu durumda"
+  },
+  "admin": {
+    "title": "Yönetici Paneli",
+    "tabs": {
+      "users": "Kullanıcılar",
+      "permissions": "İzinler"
+    },
+    "users": {
+      "title": "Kullanıcı Yönetimi",
+      "createUser": "Kullanıcı Oluştur",
+      "email": "E-posta",
+      "password": "Şifre",
+      "role": "Rol",
+      "roleUser": "Kullanıcı",
+      "roleAdmin": "Yönetici",
+      "creating": "Oluşturuluyor…",
+      "you": "siz",
+      "deleteConfirm": "Bu kullanıcı silinsin mi?",
+      "delete": "Sil",
+      "cannotDeleteSelf": "Kendi hesabınızı silemezsiniz",
+      "columns": {
+        "email": "E-posta",
+        "role": "Rol",
+        "created": "Oluşturuldu",
+        "actions": "İşlemler"
+      }
+    },
+    "permissions": {
+      "title": "Durum Değiştirme İzinleri",
+      "subtitle": "Her rolün hangi durumlara geçiş yapabileceğini yapılandırın.",
+      "saving": "Kaydediliyor…",
+      "save": "İzinleri Kaydet",
+      "saved": "Kaydedildi!"
+    }
+  },
+  "pagination": {
+    "showing": "{{total}} kayıttan {{from}}–{{to}} gösteriliyor",
+    "perPage": "{{n}} / sayfa",
+    "pageOf": "Sayfa {{page}} / {{total}}"
+  },
+  "language": {
+    "en": "English",
+    "tr": "Türkçe",
+    "bs": "Bosanski"
+  }
+}

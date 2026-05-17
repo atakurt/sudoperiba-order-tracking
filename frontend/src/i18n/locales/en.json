@@ -1,0 +1,115 @@
+{
+  "common": {
+    "signOut": "Sign out",
+    "close": "Close",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "view": "View"
+  },
+  "login": {
+    "title": "Order Tracking",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "error": "Invalid email or password"
+  },
+  "orders": {
+    "title": "Orders",
+    "loggedInAs": "Logged in as",
+    "loading": "Loading orders…",
+    "error": "Failed to load orders.",
+    "empty": "No orders found.",
+    "columns": {
+      "id": "ID",
+      "customer": "Customer",
+      "description": "Description",
+      "status": "Status",
+      "updated": "Updated"
+    }
+  },
+  "status": {
+    "all": "All",
+    "pending": "Pending",
+    "packaging": "Packaging",
+    "packaged": "Packaged",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled"
+  },
+  "search": {
+    "placeholder": "Search by ID, customer or description…",
+    "noResults": "No orders match your search."
+  },
+  "export": {
+    "button": "Export Excel"
+  },
+  "createOrder": {
+    "button": "New Order",
+    "title": "Create New Order",
+    "orderId": "Order ID",
+    "orderIdPlaceholder": "e.g. ORD-2026-004",
+    "customerName": "Customer Name",
+    "customerEmail": "Customer Email",
+    "phone": "Phone (optional)",
+    "description": "Description (optional)",
+    "create": "Create Order",
+    "creating": "Creating…"
+  },
+  "orderDetail": {
+    "loading": "Loading…",
+    "changeStatus": "Change Status",
+    "setTo": "Set to \"{{status}}\"",
+    "auditLog": "Audit Log",
+    "noChanges": "No changes yet.",
+    "initial": "Initial",
+    "locked": "This order is locked and cannot be changed.",
+    "statusError": "Failed to update status",
+    "alreadyThatStatus": "Order already has that status"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "tabs": {
+      "users": "Users",
+      "permissions": "Permissions"
+    },
+    "users": {
+      "title": "User Management",
+      "createUser": "Create User",
+      "email": "Email",
+      "password": "Password",
+      "role": "Role",
+      "roleUser": "User",
+      "roleAdmin": "Admin",
+      "creating": "Creating…",
+      "you": "you",
+      "deleteConfirm": "Delete this user?",
+      "delete": "Delete",
+      "cannotDeleteSelf": "Cannot delete your own account",
+      "columns": {
+        "email": "Email",
+        "role": "Role",
+        "created": "Created",
+        "actions": "Actions"
+      }
+    },
+    "permissions": {
+      "title": "Status Change Permissions",
+      "subtitle": "Configure which statuses each role can set orders to.",
+      "saving": "Saving…",
+      "save": "Save Permissions",
+      "saved": "Saved!"
+    }
+  },
+  "pagination": {
+    "showing": "Showing {{from}}–{{to}} of {{total}}",
+    "perPage": "{{n}} / page",
+    "pageOf": "Page {{page}} of {{total}}"
+  },
+  "language": {
+    "en": "English",
+    "tr": "Türkçe",
+    "bs": "Bosanski"
+  }
+}
