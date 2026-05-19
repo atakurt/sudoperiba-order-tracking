@@ -18,9 +18,10 @@ pub enum OrderStatus {
 pub struct Order {
     pub id: String,
     pub customer_name: String,
-    pub customer_email: String,
+    pub customer_email: Option<String>,
     pub customer_phone: Option<String>,
     pub description: Option<String>,
+    pub package_count: i32,
     pub status: OrderStatus,
     #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
@@ -35,7 +36,9 @@ pub struct AuditEntry {
     pub changed_by: Uuid,
     pub changed_by_email: String,
     pub from_status: Option<OrderStatus>,
-    pub to_status: OrderStatus,
+    pub to_status: Option<OrderStatus>,
+    pub from_package_count: Option<i32>,
+    pub to_package_count: Option<i32>,
     #[serde(with = "time::serde::rfc3339")]
     pub changed_at: OffsetDateTime,
 }
@@ -53,10 +56,16 @@ pub struct ChangeStatusRequest {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct UpdatePackageCountRequest {
+    pub package_count: i32,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct CreateOrderRequest {
     pub id: String,
     pub customer_name: String,
-    pub customer_email: String,
+    pub customer_email: Option<String>,
     pub customer_phone: Option<String>,
     pub description: Option<String>,
+    pub package_count: Option<i32>,
 }

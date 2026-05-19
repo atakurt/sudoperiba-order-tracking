@@ -5,6 +5,7 @@
     "cancel": "İptal",
     "loading": "Yükleniyor…",
     "saving": "Kaydediliyor…",
+    "save": "Kaydet",
     "view": "Görüntüle"
   },
   "login": {
@@ -51,8 +52,9 @@
     "orderId": "Sipariş ID",
     "orderIdPlaceholder": "örn. ORD-2026-004",
     "customerName": "Müşteri Adı",
-    "customerEmail": "Müşteri E-postası",
+    "customerEmail": "Müşteri E-postası (isteğe bağlı)",
     "phone": "Telefon (isteğe bağlı)",
+    "packageCount": "Paket Sayısı",
     "description": "Açıklama (isteğe bağlı)",
     "create": "Sipariş Oluştur",
     "creating": "Oluşturuluyor…"
@@ -66,7 +68,10 @@
     "initial": "Başlangıç",
     "locked": "Bu sipariş kilitli ve değiştirilemez.",
     "statusError": "Durum güncellenemedi",
-    "alreadyThatStatus": "Sipariş zaten bu durumda"
+    "alreadyThatStatus": "Sipariş zaten bu durumda",
+    "editPackageCount": "Paket sayısını düzenle",
+    "packageCountError": "Paket sayısı güncellenemedi",
+    "packageCountChanged": "{{from}} → {{to}} paket"
   },
   "admin": {
     "title": "Yönetici Paneli",

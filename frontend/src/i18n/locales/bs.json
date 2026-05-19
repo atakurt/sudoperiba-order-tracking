@@ -5,6 +5,7 @@
     "cancel": "Otkaži",
     "loading": "Učitavanje…",
     "saving": "Čuvanje…",
+    "save": "Sačuvaj",
     "view": "Prikaži"
   },
   "login": {
@@ -51,8 +52,9 @@
     "orderId": "ID narudžbe",
     "orderIdPlaceholder": "npr. ORD-2026-004",
     "customerName": "Ime kupca",
-    "customerEmail": "E-pošta kupca",
+    "customerEmail": "E-pošta kupca (opcionalno)",
     "phone": "Telefon (opcionalno)",
+    "packageCount": "Broj paketa",
     "description": "Opis (opcionalno)",
     "create": "Kreiraj narudžbu",
     "creating": "Kreiranje…"
@@ -66,7 +68,10 @@
     "initial": "Početni",
     "locked": "Ova narudžba je zaključana i ne može se mijenjati.",
     "statusError": "Greška pri ažuriranju statusa",
-    "alreadyThatStatus": "Narudžba već ima taj status"
+    "alreadyThatStatus": "Narudžba već ima taj status",
+    "editPackageCount": "Uredi broj paketa",
+    "packageCountError": "Greška pri ažuriranju broja paketa",
+    "packageCountChanged": "{{from}} → {{to}} paketa"
   },
   "admin": {
     "title": "Admin Panel",

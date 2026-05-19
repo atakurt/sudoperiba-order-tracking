@@ -8,32 +8,34 @@ use serde::Deserialize;
 use crate::{
     auth::{middleware::AdminClaims, Claims},
     errors::AppError,
-    orders::models::{AuditEntry, ChangeStatusRequest, CreateOrderRequest, Order, OrderDetail, OrderStatus},
+    orders::models::{AuditEntry, ChangeStatusRequest, CreateOrderRequest, Order, OrderDetail, OrderStatus, UpdatePackageCountRequest},
     AppState,
 };
 
 const ORDER_COLS: &str =
-    "id, customer_name, customer_email, customer_phone, description, status, created_at, updated_at";
+    "id, customer_name, customer_email, customer_phone, description, package_count, status, created_at, updated_at";
 
 pub async fn create_order(
     State(state): State<AppState>,
     _admin: AdminClaims,
     Json(body): Json<CreateOrderRequest>,
 ) -> Result<(StatusCode, Json<Order>), AppError> {
-    if body.id.trim().is_empty() || body.customer_name.trim().is_empty() || body.customer_email.trim().is_empty() {
-        return Err(AppError::BadRequest("id, customer_name and customer_email are required".into()));
+    if body.id.trim().is_empty() || body.customer_name.trim().is_empty() {
+        return Err(AppError::BadRequest("id and customer_name are required".into()));
     }
+    let package_count = body.package_count.unwrap_or(1).max(1);
 
     let order = sqlx::query_as::<_, Order>(
-        "INSERT INTO orders (id, customer_name, customer_email, customer_phone, description)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, customer_name, customer_email, customer_phone, description, status, created_at, updated_at",
+        "INSERT INTO orders (id, customer_name, customer_email, customer_phone, description, package_count)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, customer_name, customer_email, customer_phone, description, package_count, status, created_at, updated_at",
     )
     .bind(body.id.trim())
     .bind(body.customer_name.trim())
-    .bind(body.customer_email.trim())
-    .bind(body.customer_phone.as_deref().map(str::trim))
-    .bind(body.description.as_deref().map(str::trim))
+    .bind(body.customer_email.as_deref().map(str::trim).filter(|s| !s.is_empty()))
+    .bind(body.customer_phone.as_deref().map(str::trim).filter(|s| !s.is_empty()))
+    .bind(body.description.as_deref().map(str::trim).filter(|s| !s.is_empty()))
+    .bind(package_count)
     .fetch_one(&state.db)
     .await
     .map_err(|e| match e {
@@ -153,7 +155,9 @@ pub async fn get_order(
     let audit = sqlx::query_as::<_, AuditEntry>(
         "SELECT a.id, a.order_id, a.changed_by,
                 u.email AS changed_by_email,
-                a.from_status, a.to_status, a.changed_at
+                a.from_status, a.to_status,
+                a.from_package_count, a.to_package_count,
+                a.changed_at
          FROM order_status_audit a
          JOIN users u ON u.id = a.changed_by
          WHERE a.order_id = $1
@@ -228,7 +232,61 @@ pub async fn change_status(
     .bind(&id)
     .bind(claims.sub)
     .bind(from_status)
-    .bind(&body.status)
+    .bind(Some(&body.status))
+    .execute(&mut *tx)
+    .await?;
+
+    tx.commit().await?;
+    Ok(Json(updated))
+}
+
+pub async fn update_package_count(
+    State(state): State<AppState>,
+    admin: AdminClaims,
+    Path(id): Path<String>,
+    Json(body): Json<UpdatePackageCountRequest>,
+) -> Result<Json<Order>, AppError> {
+    if body.package_count < 1 {
+        return Err(AppError::BadRequest("package_count must be at least 1".into()));
+    }
+
+    let mut tx = state.db.begin().await?;
+
+    let order = sqlx::query_as::<_, Order>(
+        &format!("SELECT {ORDER_COLS} FROM orders WHERE id = $1 FOR UPDATE"),
+    )
+    .bind(&id)
+    .fetch_optional(&mut *tx)
+    .await?
+    .ok_or(AppError::NotFound)?;
+
+    if order.package_count == body.package_count {
+        tx.rollback().await?;
+        return Err(AppError::BadRequest("package count is already that value".into()));
+    }
+
+    let from_count = order.package_count;
+
+    let updated = sqlx::query_as::<_, Order>(
+        &format!(
+            "UPDATE orders SET package_count = $1, updated_at = NOW()
+             WHERE id = $2
+             RETURNING {ORDER_COLS}"
+        ),
+    )
+    .bind(body.package_count)
+    .bind(&id)
+    .fetch_one(&mut *tx)
+    .await?;
+
+    sqlx::query(
+        "INSERT INTO order_status_audit (order_id, changed_by, from_package_count, to_package_count)
+         VALUES ($1, $2, $3, $4)",
+    )
+    .bind(&id)
+    .bind(admin.0.sub)
+    .bind(from_count)
+    .bind(body.package_count)
     .execute(&mut *tx)
     .await?;
 

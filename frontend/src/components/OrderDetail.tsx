@@ -18,13 +18,15 @@ export default function OrderDetail({ orderId, onClose }: Props) {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | ''>('')
+  const [editingCount, setEditingCount] = useState(false)
+  const [draftCount, setDraftCount] = useState(1)
 
   const { data, isLoading } = useQuery({
     queryKey: ['order', orderId],
     queryFn: () => ordersApi.get(orderId).then((r) => r.data),
   })
 
-  const mutation = useMutation({
+  const statusMutation = useMutation({
     mutationFn: (status: OrderStatus) => ordersApi.changeStatus(orderId, status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['order', orderId] })
@@ -33,9 +35,23 @@ export default function OrderDetail({ orderId, onClose }: Props) {
     },
   })
 
+  const packageMutation = useMutation({
+    mutationFn: (count: number) => ordersApi.updatePackageCount(orderId, count),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['order', orderId] })
+      qc.invalidateQueries({ queryKey: ['orders'] })
+      setEditingCount(false)
+    },
+  })
+
   const isAdmin = user?.role === 'admin'
   const availableStatuses = isAdmin ? ALL_STATUSES : USER_STATUSES
   const isLocked = !isAdmin && (data?.status === 'packaged' || data?.status === 'shipped')
+
+  const startEditCount = () => {
+    setDraftCount(data?.package_count ?? 1)
+    setEditingCount(true)
+  }
 
   return (
     <div className="fixed inset-0 bg-black/40 dark:bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
@@ -47,17 +63,71 @@ export default function OrderDetail({ orderId, onClose }: Props) {
           <div className="p-8 text-center text-gray-500 dark:text-gray-400">{t('orderDetail.loading')}</div>
         ) : (
           <>
+            {/* Header */}
             <div className="p-6 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs text-gray-400 dark:text-gray-500 font-mono mb-1">{data.id}</p>
                   <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{data.customer_name}</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{data.customer_email}</p>
-                  {data.customer_phone && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{data.customer_phone}</p>
+                  {data.customer_email && <p className="text-sm text-gray-500 dark:text-gray-400">{data.customer_email}</p>}
+                  {data.customer_phone && <p className="text-sm text-gray-500 dark:text-gray-400">{data.customer_phone}</p>}
+                  {data.description && <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{data.description}</p>}
+
+                  {/* Package count */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {t('createOrder.packageCount')}:{' '}
+                      {editingCount ? null : <span className="font-medium text-gray-800 dark:text-gray-100">{data.package_count}</span>}
+                    </p>
+                    {isAdmin && !editingCount && (
+                      <button
+                        onClick={startEditCount}
+                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        {t('orderDetail.editPackageCount')}
+                      </button>
+                    )}
+                  </div>
+                  {editingCount && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDraftCount((n) => Math.max(1, n - 1))}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-lg font-medium"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        min={1}
+                        value={draftCount}
+                        onChange={(e) => setDraftCount(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-14 text-center border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setDraftCount((n) => n + 1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-lg font-medium"
+                      >
+                        +
+                      </button>
+                      <button
+                        onClick={() => packageMutation.mutate(draftCount)}
+                        disabled={packageMutation.isPending || draftCount === data.package_count}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {packageMutation.isPending ? t('common.saving') : t('common.save')}
+                      </button>
+                      <button
+                        onClick={() => setEditingCount(false)}
+                        className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
+                        {t('common.cancel')}
+                      </button>
+                    </div>
                   )}
-                  {data.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{data.description}</p>
+                  {packageMutation.isError && (
+                    <p className="text-red-500 text-xs mt-1">{t('orderDetail.packageCountError')}</p>
                   )}
                 </div>
                 <div className="flex flex-col items-end gap-2">
@@ -69,6 +139,7 @@ export default function OrderDetail({ orderId, onClose }: Props) {
               </div>
             </div>
 
+            {/* Status change */}
             <div className="p-6 border-b border-gray-100 dark:border-gray-700">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('orderDetail.changeStatus')}</h3>
               {isLocked ? (
@@ -95,11 +166,11 @@ export default function OrderDetail({ orderId, onClose }: Props) {
                   {selectedStatus && (
                     <div className="mt-3 flex gap-2">
                       <button
-                        onClick={() => mutation.mutate(selectedStatus as OrderStatus)}
-                        disabled={mutation.isPending}
+                        onClick={() => statusMutation.mutate(selectedStatus as OrderStatus)}
+                        disabled={statusMutation.isPending}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
                       >
-                        {mutation.isPending
+                        {statusMutation.isPending
                           ? t('common.saving')
                           : t('orderDetail.setTo', { status: t(`status.${selectedStatus}`) })}
                       </button>
@@ -111,9 +182,9 @@ export default function OrderDetail({ orderId, onClose }: Props) {
                       </button>
                     </div>
                   )}
-                  {mutation.isError && (
+                  {statusMutation.isError && (
                     <p className="text-red-500 text-sm mt-2">
-                      {(mutation.error as { response?: { data?: { error?: string } } })?.response?.data?.error
+                      {(statusMutation.error as { response?: { data?: { error?: string } } })?.response?.data?.error
                         ?? t('orderDetail.statusError')}
                     </p>
                   )}
@@ -121,6 +192,7 @@ export default function OrderDetail({ orderId, onClose }: Props) {
               )}
             </div>
 
+            {/* Audit log */}
             <div className="p-6">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('orderDetail.auditLog')}</h3>
               {data.audit.length === 0 ? (
@@ -136,13 +208,21 @@ export default function OrderDetail({ orderId, onClose }: Props) {
                         <span className="font-medium text-gray-600 dark:text-gray-400">{entry.changed_by_email}</span>
                       </p>
                       <p className="text-sm text-gray-700 dark:text-gray-300 mt-0.5">
-                        {entry.from_status ? (
+                        {entry.to_status != null ? (
                           <>
-                            <span>{t(`status.${entry.from_status}`)}</span>
-                            {' → '}
+                            {entry.from_status
+                              ? <><span>{t(`status.${entry.from_status}`)}</span>{' → '}</>
+                              : `${t('orderDetail.initial')}: `}
+                            <span className="font-medium">{t(`status.${entry.to_status}`)}</span>
                           </>
-                        ) : `${t('orderDetail.initial')}: `}
-                        <span className="font-medium">{t(`status.${entry.to_status}`)}</span>
+                        ) : entry.to_package_count != null ? (
+                          <span className="font-medium">
+                            {t('orderDetail.packageCountChanged', {
+                              from: entry.from_package_count,
+                              to: entry.to_package_count,
+                            })}
+                          </span>
+                        ) : null}
                       </p>
                     </li>
                   ))}

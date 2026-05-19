@@ -58,6 +58,7 @@ async fn main() {
         .route("/api/orders", get(orders::handlers::list_orders).post(orders::handlers::create_order))
         .route("/api/orders/:id", get(orders::handlers::get_order))
         .route("/api/orders/:id/status", patch(orders::handlers::change_status))
+        .route("/api/orders/:id/package-count", patch(orders::handlers::update_package_count))
         .route("/api/users", get(users::handlers::list_users).post(users::handlers::create_user))
         .route("/api/users/:id", axum::routing::delete(users::handlers::delete_user))
         .route("/api/permissions", get(permissions::handlers::get_permissions).put(permissions::handlers::update_permissions))

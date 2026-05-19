@@ -270,7 +270,10 @@ export default function Orders() {
                           <p className="text-xs text-gray-400 dark:text-gray-500">{order.customer_phone}</p>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300 max-w-xs truncate">{order.description ?? '—'}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300 max-w-xs truncate">
+                        {order.description ?? '—'}
+                        {order.package_count > 1 && <span className="ml-1.5 text-xs text-gray-400 dark:text-gray-500">×{order.package_count}</span>}
+                      </td>
                       <td className="px-4 py-3"><StatusBadge status={order.status} /></td>
                       <td className="px-4 py-3 text-gray-400 dark:text-gray-500 text-xs">{new Date(order.updated_at).toLocaleDateString()}</td>
                       <td className="px-4 py-3 text-right">
@@ -309,8 +312,11 @@ export default function Orders() {
                       <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(order.updated_at).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  {order.description && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 truncate">{order.description}</p>
+                  {(order.description || order.package_count > 1) && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 truncate">
+                      {order.description}
+                      {order.package_count > 1 && <span className="ml-1 text-gray-400 dark:text-gray-500">×{order.package_count}</span>}
+                    </p>
                   )}
                 </button>
               ))}

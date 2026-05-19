@@ -31,9 +31,10 @@ export type OrderStatus =
 export interface Order {
   id: string
   customer_name: string
-  customer_email: string
+  customer_email: string | null
   customer_phone: string | null
   description: string | null
+  package_count: number
   status: OrderStatus
   created_at: string
   updated_at: string
@@ -45,7 +46,9 @@ export interface AuditEntry {
   changed_by: string
   changed_by_email: string
   from_status: OrderStatus | null
-  to_status: OrderStatus
+  to_status: OrderStatus | null
+  from_package_count: number | null
+  to_package_count: number | null
   changed_at: string
 }
 
@@ -86,7 +89,9 @@ export const ordersApi = {
   get: (id: string) => api.get<OrderDetail>(`/orders/${id}`),
   changeStatus: (id: string, status: OrderStatus) =>
     api.patch<Order>(`/orders/${id}/status`, { status }),
-  create: (data: { id: string; customer_name: string; customer_email: string; customer_phone?: string; description?: string }) =>
+  updatePackageCount: (id: string, package_count: number) =>
+    api.patch<Order>(`/orders/${id}/package-count`, { package_count }),
+  create: (data: { id: string; customer_name: string; customer_email?: string; customer_phone?: string; description?: string; package_count?: number }) =>
     api.post<Order>('/orders', data),
 }
 

@@ -5,6 +5,7 @@
     "cancel": "Cancel",
     "loading": "Loading…",
     "saving": "Saving…",
+    "save": "Save",
     "view": "View"
   },
   "login": {
@@ -51,8 +52,9 @@
     "orderId": "Order ID",
     "orderIdPlaceholder": "e.g. ORD-2026-004",
     "customerName": "Customer Name",
-    "customerEmail": "Customer Email",
+    "customerEmail": "Customer Email (optional)",
     "phone": "Phone (optional)",
+    "packageCount": "Package Count",
     "description": "Description (optional)",
     "create": "Create Order",
     "creating": "Creating…"
@@ -66,7 +68,10 @@
     "initial": "Initial",
     "locked": "This order is locked and cannot be changed.",
     "statusError": "Failed to update status",
-    "alreadyThatStatus": "Order already has that status"
+    "alreadyThatStatus": "Order already has that status",
+    "editPackageCount": "Edit package count",
+    "packageCountError": "Failed to update package count",
+    "packageCountChanged": "{{from}} → {{to}} packages"
   },
   "admin": {
     "title": "Admin Panel",
