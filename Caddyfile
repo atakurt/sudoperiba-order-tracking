@@ -1,0 +1,3 @@
+kav.sudoperi.ba {
+    reverse_proxy frontend:80
+}
