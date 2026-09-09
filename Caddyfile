@@ -1,3 +1,12 @@
 kav.sudoperi.ba {
     reverse_proxy frontend:80
 }
+
+solaress.net, www.solaress.net {
+    reverse_proxy https://100.102.93.90:443 {
+        header_up Host {host}
+        transport http {
+            tls_insecure_skip_verify
+        }
+    }
+}
