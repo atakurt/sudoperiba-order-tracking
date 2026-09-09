@@ -27,9 +27,16 @@ backend frontend {
     .between_bytes_timeout = 10s;
 }
 
+# Port 9005 here, NOT 80 — rustfs-proxy's original "0.0.0.0:80:80"
+# Tailscale-specific binding collided with Dokploy's own Traefik, which
+# binds 0.0.0.0:80 host-wide on Istanbul (a wildcard binding blocks ANY
+# other binding on the same port, even a specific-IP one). rustfs-proxy
+# already exposed "9005:80" on 0.0.0.0, which covers the Tailscale
+# interface too, so this backend just uses that port instead of a
+# separate Tailscale-only mapping.
 backend minio_static {
     .host = "100.102.93.90";
-    .port = "80";
+    .port = "9005";
     .connect_timeout = 5s;
     .first_byte_timeout = 60s;
     .between_bytes_timeout = 10s;
