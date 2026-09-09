@@ -4,10 +4,12 @@ kav.sudoperi.ba {
 
 solaress.net {
     tls /certs/solaress.net.crt /certs/solaress.net.key
-    reverse_proxy https://100.102.93.90:443 {
+    # Varnish now runs locally on this box (moved from the Istanbul VM) —
+    # plain HTTP, no more Tailscale hop for every request. Keeping
+    # header_up Host {host} is required: Varnish's vcl_hash keys cache
+    # objects on Host, and dropping this header would silently re-key (and
+    # cold-start) the whole cache, plus break per-hostname PURGE.
+    reverse_proxy varnish:80 {
         header_up Host {host}
-        transport http {
-            tls_insecure_skip_verify
-        }
     }
 }

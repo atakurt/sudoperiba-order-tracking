@@ -27,7 +27,61 @@ services:
       - 8.8.8.8
     depends_on:
       - frontend
+      - varnish
+
+  # Moved here from the Istanbul VM (sudoperiba's docker-compose.yaml) so
+  # Caddy can reach it over a local hop instead of Tailscale on every
+  # request. VCL config (config/varnish/default.vcl) still needs to reach
+  # storefront-gateway/rustfs-proxy on Istanbul, now over Tailscale instead
+  # of Docker's local network — see the TODOs in that file before deploying.
+  varnish:
+    image: varnish:7.4
+    restart: always
+    volumes:
+      - ./config/varnish/default.vcl:/etc/varnish/default.vcl:ro
+      - varnish_vsm:/var/lib/varnish
+    environment:
+      - VARNISH_SIZE=512M
+    command: >
+      varnishd -F
+      -f /etc/varnish/default.vcl
+      -s malloc,512M
+      -a :80
+      -n /var/lib/varnish
+    healthcheck:
+      test: ["CMD", "varnishadm", "-n", "/var/lib/varnish", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Reads Varnish's VSM shared memory, so it must stay on the same host and
+  # share the same volume — see varnish_vsm below. Prometheus (on the NAS)
+  # needs its scrape target updated to this box's Tailscale IP once this is
+  # live — see sudoperiba's config/prometheus.yml.
+  #
+  # Pulled from the NAS's registry (same one sudoperiba/scripts/
+  # push_all_images.sh pushes every other service image to) — this box has
+  # no local build context for varnish-exporter's Rust source, unlike
+  # Istanbul which builds it in place.
+  varnish-exporter:
+    image: kasakurt.tailddabea.ts.net:5050/varnish-exporter:0.1.0
+    restart: always
+    volumes:
+      - varnish_vsm:/var/lib/varnish:ro
+    command:
+      - "-n"
+      - "/var/lib/varnish"
+    depends_on:
+      - varnish
+    # Bind only to this box's Tailscale interface, not 0.0.0.0 — this
+    # endpoint has no auth and shouldn't be reachable from the public
+    # internet. 100.115.175.6 is this box's own Tailscale IP — same
+    # address the NAS's prometheus.yml scrapes.
+    ports:
+      - "100.115.175.6:9131:9131"
 
 volumes:
   caddy_data:
   caddy_config:
+  varnish_vsm:
