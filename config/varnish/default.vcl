@@ -10,12 +10,18 @@ vcl 4.1;
 # text by varnishd — it has no env-var substitution — so this is hardcoded
 # rather than templated, same as the equivalent entry in sudoperiba's
 # config/prometheus.yml. If this IP ever changes, update it here directly.
-# Also confirm storefront-gateway:8092 / rustfs-proxy:80 are actually bound
-# on Istanbul's Tailscale interface (not just 0.0.0.0 inside its Docker
+# Also confirm storefront-gateway/rustfs-proxy are actually bound on
+# Istanbul's Tailscale interface (not just 0.0.0.0 inside its Docker
 # network) — see sudoperiba's docker-compose.yaml for those services.
+#
+# Port 8094 here, NOT 8092 — storefront-gateway listens on 8092 inside
+# its own container, but its host-side Tailscale port had to move to
+# 8094 because notification-service already claims host port 8092 on
+# that VM (a real collision that broke a deploy). This is the host-side
+# port, matching docker-compose.yaml's "100.102.93.90:8094:8092" mapping.
 backend frontend {
     .host = "100.102.93.90";
-    .port = "8092";
+    .port = "8094";
     .connect_timeout = 5s;
     .first_byte_timeout = 60s;
     .between_bytes_timeout = 10s;
