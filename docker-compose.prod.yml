@@ -48,6 +48,15 @@ services:
       -s malloc,512M
       -a :80
       -n /var/lib/varnish
+    # Varnish had no host port mapping at all after the move — only Caddy
+    # owns 80/443 here, so varnish-invalidator's PURGE requests to
+    # 100.115.175.6:80 were silently hitting Caddy's HTTP->HTTPS redirect
+    # instead of Varnish, and never actually purging anything. Bind only
+    # to this box's Tailscale interface (same pattern as varnish-exporter
+    # below) — sudoperiba's docker-compose.yaml needs VARNISH_PORT updated
+    # to 6081 to match.
+    ports:
+      - "100.115.175.6:6081:80"
     healthcheck:
       test: ["CMD", "varnishadm", "-n", "/var/lib/varnish", "ping"]
       interval: 10s

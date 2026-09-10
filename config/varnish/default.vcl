@@ -50,6 +50,17 @@ backend minio_static {
 acl purge {
     "localhost";
     "100.102.93.90";
+    // Varnish is now reached via a published port (100.115.175.6:6081)
+    // for PURGE traffic, not container-to-container on the compose
+    // network — a request arriving through Docker's iptables DNAT path
+    // for a host-published port normally keeps the real external source
+    // IP, so 100.102.93.90 above should be what client.ip shows. This
+    // /12 is added defensively in case Docker's userland-proxy path is
+    // in play instead and rewrites the source to something in its
+    // default bridge range — remove once a real purge from
+    // varnish-invalidator is confirmed working end-to-end (check
+    // `docker logs varnish` for the actual client.ip on a 403, if any).
+    "172.16.0.0"/12;
 }
 
 sub vcl_recv {
