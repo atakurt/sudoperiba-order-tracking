@@ -50,6 +50,9 @@ backend minio_static {
 acl purge {
     "localhost";
     "100.102.93.90";
+    // GitHub Actions reaches Varnish through the Tailscale network. Tailscale
+    // ACLs still restrict which CI identity can join this network.
+    "100.64.0.0"/10;
     // Varnish is now reached via a published port (100.115.175.6:6081)
     // for PURGE traffic, not container-to-container on the compose
     // network — a request arriving through Docker's iptables DNAT path
@@ -80,6 +83,20 @@ sub vcl_recv {
             return (synth(403, "Not allowed"));
         }
         return (purge);
+    }
+
+    # BAN every cached object for the requested hostname. Deployments use
+    # this instead of restarting Varnish so cached HTML on product/category
+    # pages is evicted along with the homepage.
+    if (req.method == "BAN") {
+        if (!client.ip ~ purge) {
+            return (synth(403, "Not allowed"));
+        }
+        if (!req.http.Host) {
+            return (synth(400, "Host header required"));
+        }
+        ban("obj.http.X-Cache-Host == " + req.http.Host);
+        return (synth(200, "Banned"));
     }
 
     # Advertise ESI capability to the backend so it emits <esi:include> only
@@ -125,6 +142,10 @@ sub vcl_recv {
 }
 
 sub vcl_backend_response {
+    # Keep the request hostname on the object so a deployment BAN can evict
+    # every cached URL for one tenant without affecting other hostnames.
+    set beresp.http.X-Cache-Host = bereq.http.Host;
+
     # Remove Set-Cookie from cacheable responses
     # The vid cookie doesn't affect HTML content for non-authenticated users
 
@@ -217,6 +238,7 @@ sub vcl_deliver {
     # Remove backend server info for security
     unset resp.http.Server;
     unset resp.http.X-Powered-By;
+    unset resp.http.X-Cache-Host;
 
     return (deliver);
 }
