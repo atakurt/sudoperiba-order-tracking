@@ -85,12 +85,15 @@ sub vcl_recv {
         return (purge);
     }
 
-    # BAN every cached object for the requested hostname. Deployments use
-    # this instead of restarting Varnish so cached HTML on product/category
-    # pages is evicted along with the homepage.
+    # Deployments can invalidate the entire cache; manual requests can
+    # still target one hostname. Both operations require the purge ACL.
     if (req.method == "BAN") {
         if (!client.ip ~ purge) {
             return (synth(403, "Not allowed"));
+        }
+        if (req.http.X-Cache-Ban-Scope == "all") {
+            ban("obj.status != 0");
+            return (synth(200, "Banned all"));
         }
         if (!req.http.Host) {
             return (synth(400, "Host header required"));
