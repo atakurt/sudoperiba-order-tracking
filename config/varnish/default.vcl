@@ -1,5 +1,7 @@
 vcl 4.1;
 
+import std;
+
 # Same VCL logic as sudoperiba's config/varnish/default.vcl, adapted for
 # running on the Hetzner box (next to Caddy) instead of the Istanbul VM.
 # The only real difference is these two backends: they used to be Docker
@@ -22,9 +24,25 @@ vcl 4.1;
 backend frontend {
     .host = "100.102.93.90";
     .port = "8094";
-    .connect_timeout = 5s;
+    # 1s not 5s: a healthy backend over Tailscale still answers connect()
+    # near-instantly under normal conditions — 5s was letting requests sit
+    # in connect() for the full timeout during an Istanbul-side frontend/
+    # storefront-gateway deploy restart, producing multi-second /catalog
+    # latency spikes that were mistaken for a request-processing slowdown.
+    .connect_timeout = 1s;
     .first_byte_timeout = 60s;
     .between_bytes_timeout = 10s;
+    # storefront-gateway has no dedicated health endpoint; /robots.txt is a
+    # cheap static route on frontend that it proxies through without
+    # touching any other downstream service, so the probe reflects whether
+    # the whole hop (gateway + frontend) is actually up.
+    .probe = {
+        .url = "/robots.txt";
+        .interval = 2s;
+        .timeout = 1s;
+        .window = 3;
+        .threshold = 2;
+    }
 }
 
 # Port 9005 here, NOT 80 — rustfs-proxy's original "0.0.0.0:80:80"
@@ -75,6 +93,17 @@ sub vcl_recv {
     } else {
         # Everything else (including /static/default/css, /static/default/js) goes to frontend
         set req.backend_hint = frontend;
+    }
+
+    # Health-aware grace: while the backend is healthy, only tolerate a few
+    # seconds of staleness (covers brief blips). Once the probe marks it
+    # sick (e.g. mid-restart during an Istanbul-side deploy), extend to 60s
+    # so in-flight requests get the last-known-good cached page instead of
+    # piling up on a backend that isn't accepting connections yet.
+    if (std.healthy(req.backend_hint)) {
+        set req.grace = 10s;
+    } else {
+        set req.grace = 60s;
     }
 
     # Handle PURGE requests first
@@ -160,6 +189,11 @@ sub vcl_backend_response {
     }
 
     if (beresp.status == 200) {
+        # Upper bound on how long an object may be served stale; the actual
+        # per-request grace window is set in vcl_recv via req.grace
+        # (health-aware: 10s normally, 60s while the backend probe is down).
+        set beresp.grace = 60s;
+
         # Cache homepage for 10 minutes
         if (bereq.url == "/") {
             set beresp.ttl = 10m;
