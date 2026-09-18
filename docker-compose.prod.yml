@@ -90,6 +90,36 @@ services:
     ports:
       - "100.115.175.6:9131:9131"
 
+  # Ships varnish-exporter's metrics to the NAS's Prometheus, which cannot
+  # reach this box on its own: the NAS's Tailscale runs in userspace mode
+  # (no kernel TUN device, confirmed via `ip route | grep 100.64` returning
+  # nothing on the NAS host itself), so nothing running on the NAS — the
+  # Prometheus container included, even with network_mode: host — can dial
+  # out to any tailnet peer, this one included. Every existing NAS
+  # integration (Loki, Tempo) works around this the same way: push
+  # NAS-ward instead of having the NAS pull. This does the same for
+  # metrics via Prometheus remote-write, which the NAS's Prometheus already
+  # has enabled (`--web.enable-remote-write-receiver`, see
+  # scripts/nas-monitoring-compose.yaml in sudoperiba) for exactly this
+  # purpose (Tempo's metrics_generator already pushes to it that way).
+  alloy:
+    image: grafana/alloy:v1.5.1
+    restart: always
+    volumes:
+      - ./config/alloy-varnish.alloy:/etc/alloy/config.alloy:ro
+    # Alloy's own HTTP server (config UI, /-/ready, /-/reload) is not
+    # exposed to anything here — no other service in this file calls it
+    # and no port mapping is published for it. Bound to loopback only, not
+    # 0.0.0.0, so it can't be reached from the container network either;
+    # nothing needs it, so nothing should be able to reach it.
+    command:
+      - "run"
+      - "--server.http.listen-addr=127.0.0.1:12345"
+      - "--stability.level=public-preview"
+      - "/etc/alloy/config.alloy"
+    depends_on:
+      - varnish-exporter
+
 volumes:
   caddy_data:
   caddy_config:

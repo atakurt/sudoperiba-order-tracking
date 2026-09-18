@@ -1,0 +1,26 @@
+// Ships this box's varnish-exporter metrics to the NAS's Prometheus over
+// Tailscale (this box's Tailscale works normally — only the NAS's is
+// userspace-only with no kernel route, so it can't dial out here; see the
+// alloy service comment in docker-compose.prod.yml). Same
+// push-instead-of-pull pattern sudoperiba's own Alloy already uses for
+// Loki/Tempo, just for metrics via Prometheus remote-write instead of a
+// direct scrape.
+prometheus.scrape "varnish" {
+	targets = [
+		{
+			"__address__" = "varnish-exporter:9131",
+			"job"         = "varnish-exporter",
+			"service"     = "varnish-exporter",
+			"instance"    = "varnish-exporter",
+		},
+	]
+	forward_to = [prometheus.remote_write.nas.receiver]
+}
+
+prometheus.remote_write "nas" {
+	endpoint {
+		// Plain HTTP, port 9090 — confirmed via `curl http://kasakurt.tailddabea.ts.net:9090/-/healthy`;
+		// there's no TLS listener on this port.
+		url = "http://kasakurt.tailddabea.ts.net:9090/api/v1/write"
+	}
+}
