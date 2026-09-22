@@ -135,8 +135,20 @@ sub vcl_recv {
     # when we can actually process it (the frontend inlines fragments otherwise).
     set req.http.Surrogate-Capability = "varnish=ESI/1.0";
 
-    # Per-visitor ESI fragments must never be cached and must carry the vid cookie.
-    if (req.url ~ "^/fragment/") {
+    # Every other /fragment/ route (e.g. recently-viewed) is per-visitor and
+    # must never be cached — must carry the vid cookie. card-actions/
+    # quick-view are carved out below (after Accept-Encoding normalization),
+    # since they carry no visitor data (pure product title/price/variants/
+    # stock) and are safe to cache short-TTL (see vcl_backend_response) —
+    # they're fetched on every catalog quick-add tap and would otherwise pay
+    # a full origin round-trip on each one. Stock is revalidated server-side
+    # at order creation regardless of what a stale cached fragment showed,
+    # so a few seconds of staleness here doesn't enable overselling. Not
+    # purged by variant stock/price events today (varnish-invalidator's
+    # TOPICS has no variant.* entries) — only by the product.* events it
+    # already subscribes to — so a variant-only edit relies on the 10s TTL
+    # alone, not an active purge.
+    if (req.url ~ "^/fragment/" && req.url !~ "^/fragment/(card-actions|quick-view)/") {
         return (pass);
     }
 
@@ -205,6 +217,19 @@ sub vcl_backend_response {
         if (bereq.url ~ "^/product/") {
             set beresp.ttl = 1h;
             set beresp.http.Cache-Control = "public, max-age=3600";
+            unset beresp.http.Set-Cookie;
+        }
+
+        # Cache card-actions/quick-view fragments briefly — short enough that
+        # a stock change (order placed, admin edit) is only visible stale for
+        # a few seconds, actively purged on product.* events besides (see
+        # varnish-invalidator; variant-only events aren't subscribed to
+        # today, so those rely on this TTL alone), and order creation
+        # re-validates stock server-side regardless, so this TTL is a
+        # latency optimization only, not something correctness depends on.
+        if (bereq.url ~ "^/fragment/(card-actions|quick-view)/") {
+            set beresp.ttl = 10s;
+            set beresp.http.Cache-Control = "public, max-age=10";
             unset beresp.http.Set-Cookie;
         }
 
